@@ -64,7 +64,8 @@ class MonthlySalary extends Component {
 
         employeeTable = <MonthlySalaryTable employees={employees} />;
 
-        if(salaryDay >= 21){
+        if(salaryDay >= 5){
+          console.log("generating payslips")
           generateBtn = <Button classnameItems="btn-lg btn-info mb-4" btnName="Generate All Payslips" onClick={this.generateAll.bind(this, employees)} />
         }
         

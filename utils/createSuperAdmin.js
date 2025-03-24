@@ -1,70 +1,33 @@
-const keys = require('../config/keys');
-const mailer = require('@sendgrid/mail');
-const bcrypt = require('bcryptjs');
-mailer.setApiKey(keys.sendGridKey);
-
 const User = require('../models/User');
 
-const createSuperAdmin = () => {
-  const password = _generatePassword();
-  const name = keys.name;
-  const email = keys.email;
-  const is_admin = 1;
+const createSuperAdmin = async () => {
+  try {
+    const adminData = {
+      name: 'Super Admin',
+      email: 'admin@ex.com',
+      password: 'admin123',
+      is_admin: 1
+    };
 
-  User.findOne({ email })
-    .then((user) => {
-      if (!user) {
-        const newUser = new User({
-          name,
-          email,
-          password,
-          is_admin,
-        });
+    // Check if admin exists
+    //const existingAdmin = await User.findOne({ email: adminData.email });
+    
+    // if (existingAdmin) {
+    //   console.log('Super Admin already exists');
+    //   return;
+    // }
 
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser
-              .save()
-              .then((registered) => {
-                if (registered) {
-                  _sendEmail(registered)
-                    .then((res) =>
-                      console.log('Message successfully sent!')
-                    )
-                    .catch((err) => console.log(err));
-                }
-              })
-              .catch((err) => console.log(err));
-          });
-        });
-      } else {
-        console.log('User email already exist');
-      }
-    })
-    .catch((err) => condsole.log(err));
+    // Create and save admin
+    const newAdmin = new User(adminData);
+    await newAdmin.save();
+    
+    console.log('Super Admin created successfully');
+    console.log('Email:', adminData.email);
+    console.log('Password:', adminData.password);
+
+  } catch (error) {
+    console.error('Error creating Super Admin:', error);
+  }
 };
 
-const _generatePassword = () => {
-  return Array(30)
-    .fill(
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-    )
-    .map(function (x) {
-      return x[Math.floor(Math.random() * x.length)];
-    })
-    .join('');
-};
-
-const _sendEmail = (payload) => {
-  const data = {
-    from: 'Payroll Admin <no-reply@payroll.admin>',
-    to: 'akinlekan@gmail.com',
-    subject: 'Super Admin Details',
-    text: `Hello, Here are your login details\nEmail: ${payload.email}\nPassword: ${payload.password}`,
-  };
-  return mailer.send(data);
-};
-
-module.exports = Object.assign({}, { createSuperAdmin });
+module.exports = { createSuperAdmin };
